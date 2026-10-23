@@ -1,0 +1,24 @@
+{
+  "appId": "io.github.fight76897_ctrl.claudeconnectionhelper",
+  "productName": "Claude Connection Helper",
+  "directories": { "output": "release" },
+  "win": {
+    "target": [{ "target": "nsis", "arch": ["x64"] }],
+    "executableName": "ClaudeConnectionHelper",
+    "signAndEditExecutable": false
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowElevation": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": "always",
+    "createStartMenuShortcut": true,
+    "shortcutName": "Claude 连接助手",
+    "runAfterFinish": false,
+    "deleteAppDataOnUninstall": false,
+    "artifactName": "ClaudeConnectionHelper-${version}-Setup-${arch}.${ext}",
+    "include": "scripts/installer.nsh"
+  },
+  "publish": null
+}

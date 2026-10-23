@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Claude 连接助手</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">↗</span><div>连接助手<small>FOR CLAUDE</small></div></div>
+    <div class="sidebar-label">工作空间</div>
+    <a class="nav-item active" href="#overview"><span aria-hidden="true">◉</span> 连接总览</a>
+    <a class="nav-item" href="#settings"><span aria-hidden="true">⚙</span> 代理配置</a>
+    <a class="nav-item" href="#protection"><span aria-hidden="true">◇</span> 直连阻断</a>
+    <a class="nav-item" href="#activity"><span aria-hidden="true">≡</span> 连接记录</a>
+    <div class="sidebar-bottom"><span class="local-dot"></span>仅在本机运行<small>凭据保存在当前 Windows 账户下</small></div>
+  </aside>
+
+  <main>
+    <header id="overview" class="page-header">
+      <div><p class="eyebrow">YOUR CONNECTION, IN ONE PLACE</p><h1>让 Claude 使用同一条线路</h1><p class="subtitle">通过本地 VPN 连接你的住宅代理，统一管理网页、Desktop、Code 和 Science。</p></div>
+      <span id="connection-status" class="status-badge" role="status"><span class="status-dot"></span><span id="connection-status-text">未连接</span></span>
+    </header>
+
+    <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+
+    <section class="route-panel" aria-label="连接线路">
+      <div class="section-heading"><h2>当前线路</h2><span class="quiet-label">上游断开时，停止转发</span></div>
+      <div class="route">
+        <div class="route-step"><span class="step-number">01</span><strong>本地 VPN</strong><span id="vpn-summary">127.0.0.1:15236</span></div>
+        <span class="route-arrow" aria-hidden="true">→</span>
+        <div class="route-step"><span class="step-number">02</span><strong>住宅代理</strong><span id="residential-summary">等待配置</span></div>
+        <span class="route-arrow" aria-hidden="true">→</span>
+        <div class="route-step endpoint"><span class="step-number">03</span><strong>Claude</strong><span>网页 · Desktop · Code · Science</span></div>
+      </div>
+      <div class="connection-actions"><div><span class="metric-label">本地代理入口</span><code id="local-address">未启动</code></div><div class="button-group"><button id="test-connection" class="button secondary" type="button" disabled>检测出口</button><button id="toggle-connection" class="button primary" type="button">启动连接 <span aria-hidden="true">→</span></button></div></div>
+    </section>
+
+    <section id="protection" class="panel protection-panel" aria-labelledby="protection-title">
+      <div class="section-heading"><div><h2 id="protection-title">直连阻断 · Windows 防火墙</h2><p>阻断所选程序的外网直连（IPv4 / IPv6 / UDP），保留本机代理和本地服务通信。</p></div><span id="guard-status" class="tag warning-tag">尚未启用</span></div>
+      <p id="guard-detail" class="guard-detail">正在读取防火墙状态…</p>
+      <div id="guard-targets" class="guard-targets" aria-label="受保护程序列表"></div>
+      <p class="field-hint guard-warning">规则按 .exe 路径生效，未列出的程序不受保护。共享 Node / Python 的其他任务也会受影响；更新或新增子进程后请重新扫描。仅防火墙不会阻断其他回环代理；需 ProxyBridge 运行中的回环规则补充。</p>
+      <div class="guard-actions"><div class="button-group"><button id="guard-refresh" class="button secondary" type="button">重新扫描</button><button id="guard-add" class="button secondary" type="button">添加 API 程序</button></div><div class="button-group"><button id="guard-remove" class="button secondary" type="button">恢复直连</button><button id="guard-apply" class="button primary" type="button">启用所选保护</button></div></div>
+      <p class="field-hint">启用与恢复需要 Windows 管理员授权。退出助手后规则继续生效；网络不通时可重新打开助手恢复。</p>
+    </section>
+
+    <section class="panel protection-panel" aria-labelledby="bridge-title">
+      <div class="section-heading"><div><h2 id="bridge-title">ProxyBridge · 程序路由与观察</h2><p>为上方勾选的客户端生成专用规则：阻断 UDP、阻断其他本机代理、TCP 送入助手。</p></div><span id="bridge-status" class="tag">正在检测</span></div>
+      <p id="bridge-detail" class="guard-detail">正在检测已安装的 GitHub 版本…</p>
+      <div class="button-group"><button id="bridge-refresh" class="button secondary" type="button">刷新状态</button><button id="bridge-export" class="button secondary" type="button">生成配置</button><button id="bridge-start" class="button primary" type="button">启动拦截与记录</button><button id="bridge-stop" class="button secondary" type="button">停止拦截</button></div>
+      <p class="field-hint guard-warning">路由记录只表示尝试，不证明美国出口。拦截退出后本机代理阻断失效；程序公网阻断依靠防火墙保留。透明路由可能被防火墙直接拒绝，客户端仍应从助手启动。会影响本机 MCP 工具；已有连接需退出客户端后重启。</p>
+    </section>
+
+    <div class="workspace-grid">
+      <section id="settings" class="panel settings-panel">
+        <div class="section-heading"><div><h2>代理配置</h2><p>按服务商标注选择住宅代理协议，再填写连接参数。</p></div><span class="tag">本地保存</span></div>
+        <form id="config-form">
+          <fieldset id="config-fields">
+            <legend class="sr-only">连接参数</legend>
+            <div class="field-group-label"><span class="mini-step">1</span>本地 VPN</div>
+            <div class="field-row host-row"><label>代理地址<input id="vpn-host" name="vpnHost" type="text" value="127.0.0.1" placeholder="127.0.0.1" spellcheck="false" autocomplete="off" required></label><label>端口<input id="vpn-port" name="vpnPort" type="number" value="15236" min="1" max="65535" required></label></div>
+            <div class="field-group-label residential-label"><span class="mini-step">2</span>美国住宅代理</div>
+            <div class="field-row protocol-row"><label>连接协议<select id="proxy-protocol" name="residentialProtocol"><option value="http">HTTP CONNECT</option><option value="socks5">SOCKS5</option></select></label><p class="field-hint">协议须与住宅代理端口一致。本地 VPN 入口仍使用 HTTP CONNECT。</p></div>
+            <div class="field-row host-row"><label>代理地址<input id="proxy-host" name="proxyHost" type="text" placeholder="服务商提供的域名或 IP" spellcheck="false" autocomplete="off" required></label><label>端口<input id="proxy-port" name="proxyPort" type="number" placeholder="如 8000" min="1" max="65535" required></label></div>
+            <label class="expected-ip-label">预期静态出口 IP（必填）<input id="expected-ip" type="text" required placeholder="填服务商提供的固定出口 IP" spellcheck="false" autocomplete="off"></label>
+            <div class="field-row"><label>用户名<input id="proxy-username" name="proxyUsername" type="text" placeholder="代理用户名（如有）" spellcheck="false" autocomplete="off"></label><label>密码<div class="password-field"><input id="proxy-password" name="proxyPassword" type="password" placeholder="代理密码（如有）" autocomplete="new-password"><button id="toggle-password" type="button" aria-label="显示密码" title="显示密码">显示</button></div></label></div>
+            <p id="password-hint" class="field-hint">凭据通过 Windows 账户加密保存。</p>
+            <label class="local-port-label">本地监听端口<input id="local-port" name="localPort" type="number" value="17861" readonly></label>
+          </fieldset>
+          <div class="form-footer"><span id="config-help">修改配置后保存，再启动连接。</span><button id="save-config" class="button secondary" type="submit">保存配置</button></div>
+        </form>
+      </section>
+
+      <div class="right-column">
+        <section class="panel exit-panel" aria-labelledby="exit-title">
+          <div class="section-heading"><h2 id="exit-title">出口检测</h2><span id="exit-check-status" class="tag">尚未检测</span></div>
+          <div id="exit-ip" class="exit-ip">未检测</div>
+          <p id="exit-detail" class="field-hint">启动时核对固定 IP + 美国归属，通过后每 30 秒检查；单次超时最多 25 秒，失败断开全部助手隧道。</p>
+          <div class="exit-meta"><span>连接耗时</span><strong id="exit-latency">—</strong></div>
+        </section>
+
+        <section class="panel launcher-panel" aria-labelledby="launch-title">
+          <div class="section-heading"><h2 id="launch-title">开始使用</h2></div>
+          <p class="section-description" id="launch-help">启动连接后，即可打开应用。</p>
+          <button class="launch-card" id="launch-browser" type="button" disabled><span class="app-icon browser-icon" aria-hidden="true">◎</span><span><strong>Claude 网页版</strong><small>独立 Cookie · 固定代理 · 内置浏览器</small></span><span class="launch-arrow" aria-hidden="true">↗</span></button>
+          <button class="launch-card" id="launch-code" type="button" disabled><span class="app-icon code-icon" aria-hidden="true">&gt;_</span><span><strong>Claude Code</strong><small>在终端中打开</small></span><span class="launch-arrow" aria-hidden="true">↗</span></button>
+          <button class="launch-card" id="launch-desktop" type="button" disabled><span class="app-icon science-icon">▣</span><span><strong>Claude 桌面版</strong><small>官方客户端 · 固定代理启动 · 登录回调</small></span><span class="launch-arrow">↗</span></button><button id="select-desktop" class="text-button" type="button">选择 Desktop 安装位置</button>
+          <div class="working-directory"><label for="working-directory">Code 工作目录</label><div><input id="working-directory" type="text" placeholder="选择你的项目文件夹" spellcheck="false" readonly><button id="choose-directory" class="button compact" type="button">选择</button></div></div>
+          <button class="launch-card" id="launch-science" type="button" disabled><span class="app-icon science-icon" aria-hidden="true">✳</span><span><strong>Claude Science</strong><small>启动时应用代理设置</small></span><span class="launch-arrow" aria-hidden="true">↗</span></button>
+          <button id="select-science" class="text-button" type="button">选择 Science 安装位置</button>
+          <p class="launcher-note">已打开的应用需从托盘完整退出后重新启动。Science 登录可用「Paste code instead」，将授权链接复制到专用浏览器，完成后粘贴完整代码。</p>
+          <p id="version-detail" class="launcher-note">每分钟自动检查已安装版本与新程序路径；新增路径需补齐保护。</p>
+        </section>
+      </div>
+    </div>
+
+    <section id="activity" class="panel activity-panel" aria-labelledby="activity-title"><div class="section-heading"><div><h2 id="activity-title">最近连接</h2><p>记录目标及 ProxyBridge 路由事件，不记录请求正文、凭据或登录令牌。</p></div><button id="clear-logs" class="text-button" type="button">清空显示</button></div><div id="log-list" class="log-list" role="log" aria-live="polite"><p id="log-empty" class="log-empty">暂无连接记录。启动连接后，这里会显示线路活动。</p></div></section>
+    <footer class="page-footer">固定出口不保证账号不会被封禁。此助手仅管理经过本地代理的连接。</footer>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
